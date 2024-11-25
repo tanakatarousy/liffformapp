@@ -430,29 +430,46 @@
             });
         }
 
-        function sendTextAndFile(text, file) {
-            const messages = [{
-                'type': 'text',
-                'text': text
-            }];
+ function sendTextAndFile(text, file) {
+    const messages = [{
+        'type': 'text',
+        'text': text
+    }];
+    
+    if (file) {
+        const fileMessage = {
+            'type': 'file',
+            'originalContentUrl': file.url,  // ファイルURL（URLを指定する必要あり）
+            'fileName': file.name            // ファイル名
+        };
+        messages.push(fileMessage);
+    }
+
+    liff.sendMessages(messages)
+        .then(function () {
+            liff.closeWindow();
+        })
+        .catch(function (error) {
+            // エラー内容を詳細にログ出力する
+            console.error('Failed to send message. Error details:', error);
             
-            if (file) {
-                const fileMessage = {
-                    'type': 'file',
-                    'originalContentUrl': file.url,  // ファイルURL（URLを指定する必要あり）
-                    'fileName': file.name            // ファイル名
-                };
-                messages.push(fileMessage);
+            // エラー情報をユーザーにわかりやすく表示
+            let errorMessage = `Failed to send message. Please check the details:\n\n`;
+            errorMessage += `Error Name: ${error.name || 'Unknown'}\n`;
+            errorMessage += `Error Message: ${error.message || 'No message available'}\n`;
+
+            // オブジェクト形式の場合に備え、エラーの中身をJSON文字列化
+            if (typeof error === 'object') {
+                errorMessage += `Error Details: ${JSON.stringify(error, null, 2)}`;
+            } else {
+                errorMessage += `Error Details: ${error}`;
             }
 
-            liff.sendMessages(messages)
-                .then(function () {
-                    liff.closeWindow();
-                })
-                .catch(function (error) {
-                    window.alert('Failed to send message ' + error);
-                });
-        }
+            // アラート表示
+            window.alert(errorMessage);
+        });
+}
+
 
         
         const params = (new URL(document.location)).searchParams;
